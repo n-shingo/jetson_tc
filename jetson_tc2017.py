@@ -173,16 +173,16 @@ def main():
             thetasImg = get_capture_image(thetasCap)
             
             if( thetasImg is not None and last_thetas_img is not None) :
-                if( np.allclose( thetasImg[:64,:64,0], last_thetas_img) ):
-                    thetasImg = None
+                if( np.allclose( thetasImg[344:376,304:336,0], last_thetas_img) ):
+                    thetasImg = None 
                     
             if thetasImg is not None:
-                last_thetas_img = thetasImg[:64,:64,0]
+                last_thetas_img = thetasImg[344:376,304:336,0].copy()
 
             # 画像が取れているかチェック
             if( thetasImg is None ):
-                thetasCap.release()
-                thetasCap = None
+                #thetasCap.release()
+                #thetasCap = None
                 data.ThetaSStatus = 0
             else:
                 data.ThetaSStatus = 1
@@ -199,24 +199,26 @@ def main():
                     thetasImg = None
                     
             if webcamImg is not None:
-                last_webcam_img = webcamImg[:64,:64,0]
+                last_webcam_img = webcamImg[:64,:64,0].copy()
 
             # 画像が取れているかチェック
             if( webcamImg is None ):
-                webcamCap.release()
-                webcamCap = None
+                #webcamCap.release()
+                #webcamCap = None
                 data.WebcamStatus = 0
             else:
                 data.WebcamStatus = 1
             
                 
         # カメラが２台とも落ちていたら、安全のため 30Hz程度で回す
-        if( thetasCap == None and webcamCap == None ):
+        # TODO:強制的に15Hzになるようにするべき
+        if( thetasImg is None and webcamImg is None ):
             sleep(1.0/30.0)
             
             
         """---------------- 人探し ----------------------"""
         if( thetasImg is not None and jetsonStatus == 2):
+             
             img, pos = searcher.find_people( thetasImg, show_imgs=SHOW_PROCESS_IMGS )
             
             if pos is not None : # found!
@@ -225,7 +227,11 @@ def main():
             
             else: # not found
                 data.PersonResult = 2
-        
+
+        if( thetasImg is not None ):
+            cv2.imshow( "ThetaS raw image", thetasImg )
+            cv2.waitKey(1)
+            
         
         """---------------- 交通信号検出 --------------------"""
         # TODO
