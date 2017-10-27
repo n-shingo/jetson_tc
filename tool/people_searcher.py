@@ -13,7 +13,7 @@ from tool.thetas_focused_converter import ThetaSFocusedConverter
 from chainer import cuda, Variable
 
 class PeopleSearcher:
-    def __init__(self, cnn, gpu=0, threshold=0.9 ):
+    def __init__(self, cnn, gpu=0, threshold=0.9, saveimgdir=None):
         self.CNN = cnn
         self.CNN.train = False
         self.CNN.predictor.train = False
@@ -22,10 +22,15 @@ class PeopleSearcher:
         self.XP = cuda.cupy if gpu >= 0 else np
         self.Threshold = threshold
         self.conv = ThetaSFocusedConverter(blobsize=32, hcnt=16, wcnt=32, imgline=[8,9,10])
+        self.save_img_cnt = 0
+
+        self.saveimg_dir = saveimgdir #画像保存ディレクトリ
+        if self.saveimg_dir[-1] != '/' :
+            self.saveimg_dir += '/'
         
     
     # 画像から人を検出    
-    def find_people( self, img, show_imgs=False, show_details=False ):
+    def find_people( self, img, show_imgs=False, show_details=False, save_img=False ):
         
         # コンバータで正距円筒図に変換
         img = self.conv.convert(img);
@@ -37,6 +42,13 @@ class PeopleSearcher:
     
         # 後ろ90度カット(前方 270 度見る)画像
         img = img[:, 1024//8:1024*7//8,:]
+
+        # 画像の保存
+        if save_img and img is not None:
+            filename = self.saveimg_dir + "img{0:06d}.png".format(self.save_img_cnt)
+            cv2.imwrite( filename, img )
+            self.save_img_cnt+=1
+
     
         # 遠くを検索するための画像作成
         img_far = img[0:64,:,:]
@@ -156,8 +168,8 @@ class PeopleSearcher:
         if pos_rad is not None:
             pos_pix = np.round(pos_rad * 180.0 / np.pi / 360.0 * img_origin.shape[1] + img_origin.shape[1]//2)
             cv2.circle( img_origin, (int(pos_pix), img_origin.shape[0]//2), 40, (0,0,255))
-        
-        return img_origin, pos_rad
+
+        return img_origin, -pos_rad
         
         """
         # -------------------- 位置の判定 ---------------------------#

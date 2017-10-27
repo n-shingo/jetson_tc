@@ -7,13 +7,18 @@ Created on Sat Oct 21 11:30:28 2017
 Jetson program for Tsukuba Challenge
 """
 
+# 画像の保存 
+SAVE_IMG_FLAG = True       # 画像を保存するかのフラグ
+SAVE_IMG_ROOTDIR = "./"    # 保存場所のルートディレクトリ
+
 # PCとJetsonのIPアドレス
-PC_IP = "172.29.46.41" 
-JETSON_IP = "172.29.46.39"
+PC_IP = "192.168.1.2"     # PCの有線LANポートのIPアドレス
+JETSON_IP = "192.168.1.3" # Jetsonの有線LANポートのIPアドレス
 
 
 import sys
 import cv2
+import os, datetime
 import numpy as np
 from chainer import serializers, cuda, Variable
 import chainer.links as L
@@ -23,7 +28,6 @@ from tool.communication import SendData, CommandParser
 from tool.tools import FrequencyChecker, Timer
 from tool.people_searcher import PeopleSearcher
 from models.LeNet5 import MyLeNet5WithDo
-
 
 
 """ カメラ関連 """
@@ -112,6 +116,21 @@ def main():
     print( "#\n#----------------------------------------------[done]\n" );
     
     
+	# --------------------  画像保存関連 --------------------------- #
+    print( "\n[Miscs]" )
+    print( "#---------------------------------------------------\n#" );
+    save_img_dir = None
+    if SAVE_IMG_FLAG :
+        save_img_dir = datetime.datetime.now().strftime("img_%Y%m%d_%H%M%S/")
+        print( "# Save images : [YES] " )
+        print( '# Directory : "{0}"'.format(save_img_dir) )
+        os.makedirs( save_img_dir )
+        print( "# Save directory was crated" )
+    else:
+        print( "# Save images : [No] " )
+    print( "#\n#----------------------------------------------[done]\n" );
+		
+    
     
     # ---------------------- 人探し準備 --------------------------- #
     print( "\n[Preparig searching target people]" )
@@ -133,13 +152,11 @@ def main():
     
     # 人検索クラス
     print( "# Preparing PeopleSearcher module..." )
-    searcher = PeopleSearcher(model_being, gpu=GPU, threshold=PEROSON_THRESHOLD)
+    searcher = PeopleSearcher(model_being, gpu=GPU, threshold=PEROSON_THRESHOLD, saveimgdir=save_img_dir)
     # 初回の探索は遅いので、一回だけ無駄探索しておく
     tmp_img = np.zeros( THETAS_SIZE, dtype=np.uint8 )
     searcher.find_people( tmp_img, show_imgs=False )
     print( "#\n#----------------------------------------------[done]\n" );
-    
-
 
      
 
@@ -153,7 +170,7 @@ def main():
 
         
         """------------------- PCからのデータ受信 -----------------"""
-        # 通信データ取得　
+        # 通信データ取得
         rcvData = recver.receiveMessage( timeout=RCV_TIMEOUT )
         cmdParser.parse(rcvData)
         jetsonStatus = cmdParser.JetsonStatus
@@ -219,7 +236,7 @@ def main():
         """---------------- 人探し ----------------------"""
         if( thetasImg is not None and jetsonStatus == 2):
              
-            img, pos = searcher.find_people( thetasImg, show_imgs=SHOW_PROCESS_IMGS )
+            img, pos = searcher.find_people( thetasImg, show_imgs=SHOW_PROCESS_IMGS, save_img=SAVE_IMG_FLAG )
             
             if pos is not None : # found!
                 data.PersonResult = 1
@@ -228,9 +245,9 @@ def main():
             else: # not found
                 data.PersonResult = 2
 
-        if( thetasImg is not None ):
-            cv2.imshow( "ThetaS raw image", thetasImg )
-            cv2.waitKey(1)
+        #if( thetasImg is not None ):
+        #    cv2.imshow( "ThetaS raw image", thetasImg )
+        #    cv2.waitKey(1)
             
         
         """---------------- 交通信号検出 --------------------"""
