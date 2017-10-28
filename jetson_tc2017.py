@@ -121,7 +121,7 @@ def main():
     print( "#---------------------------------------------------\n#" );
     save_img_dir = None
     if SAVE_IMG_FLAG :
-        save_img_dir = datetime.datetime.now().strftime("img_%Y%m%d_%H%M%S/")
+        save_img_dir = SAVE_IMG_ROOTDIR + datetime.datetime.now().strftime("img_%Y%m%d_%H%M%S/")
         print( "# Save images : [YES] " )
         print( '# Directory : "{0}"'.format(save_img_dir) )
         os.makedirs( save_img_dir )
