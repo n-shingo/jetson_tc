@@ -168,8 +168,9 @@ class PeopleSearcher:
         if pos_rad is not None:
             pos_pix = np.round(pos_rad * 180.0 / np.pi / 360.0 * img_origin.shape[1] + img_origin.shape[1]//2)
             cv2.circle( img_origin, (int(pos_pix), img_origin.shape[0]//2), 40, (0,0,255))
+            pos_rad = -pos_rad
 
-        return img_origin, -pos_rad
+        return img_origin, pos_rad
         
         """
         # -------------------- 位置の判定 ---------------------------#
