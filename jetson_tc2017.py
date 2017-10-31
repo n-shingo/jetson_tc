@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Oct 21 11:30:28 2017
-
 @author: shingo
-
 Jetson program for Tsukuba Challenge
 """
 
 # 画像の保存 
-SAVE_IMG_FLAG = True       # 画像を保存するかのフラグ
+SAVE_IMG_FLAG = False       # 画像を保存するかのフラグ
 SAVE_IMG_ROOTDIR = "./"    # 保存場所のルートディレクトリ
 
 # PCとJetsonのIPアドレス
@@ -96,7 +94,8 @@ def main():
     #------------------------ 通信準備 -----------------------------#
     print( "\n[Preparing communication with PC]")
 
-    jetsonIP = JETSON_IP # get_ownIP()
+    #jetsonIP =  get_ownIP()
+    jetsonIP = JETSON_IP
     jetsonSndPort = JETSON_SND_PORT
     jetsonRcvPort = JETSON_RCV_PORT
     
@@ -234,10 +233,12 @@ def main():
             
             
         """---------------- 人探し ----------------------"""
+        res_t = False
         if( thetasImg is not None and jetsonStatus == 2):
              
-            img, pos = searcher.find_people( thetasImg, show_imgs=SHOW_PROCESS_IMGS, save_img=SAVE_IMG_FLAG )
-            
+            #img, pos = searcher.find_people( thetasImg, show_imgs=SHOW_PROCESS_IMGS, save_img=SAVE_IMG_FLAG )
+            res_t, img, pos = searcher.find_people_multiimg( thetasImg, show_imgs=SHOW_PROCESS_IMGS, save_img=SAVE_IMG_FLAG )
+
             if pos is not None : # found!
                 data.PersonResult = 1
                 data.PersonPos = pos
@@ -245,9 +246,9 @@ def main():
             else: # not found
                 data.PersonResult = 2
 
-        #if( thetasImg is not None ):
-        #    cv2.imshow( "ThetaS raw image", thetasImg )
-        #    cv2.waitKey(1)
+        if( img is not None ):
+            cv2.imshow( "final result", img)
+            cv2.waitKey(1)
             
         
         """---------------- 交通信号検出 --------------------"""
@@ -255,20 +256,21 @@ def main():
         
         
         
-        """------------- PC へデータ送信 ------------------"""
-        sender.sendMessage( data.comStr() )
-
-        
-        
-        """---------------- 結果表示 --------------------"""
-        # Output result
-        sys.stdout.write( "\x1b[KLoop frequency: {0:.2f}Hz\n".format( freqChck.frequency() ) );
-        print( "[Jetson Status]" )
-        sys.stdout.write('\x1b[K' )
-        print( '  Jtsn:{0}, ThtaS:{1}, WebCam:{2}, Psn:{3}, PsnPos:{4:.2f}, Sign:{5}'
-              .format(jetsonStatus, data.ThetaSStatus, data.WebcamStatus,
-                  data.PersonResult, data.PersonPos, data.SignalResult ) )
-        sys.stdout.write('\x1b[3A')
+        if( res_t == True or jetsonStatus != 2):
+            """------------- PC へデータ送信 ------------------"""
+            sender.sendMessage( data.comStr() )
+    
+            
+            
+            """---------------- 結果表示 --------------------"""
+            # Output result
+            sys.stdout.write( "\x1b[KLoop frequency: {0:.2f}Hz\n".format( freqChck.frequency() ) );
+            print( "[Jetson Status]" )
+            sys.stdout.write('\x1b[K' )
+            print( '  Jtsn:{0}, ThtaS:{1}, WebCam:{2}, Psn:{3}, PsnPos:{4:.2f}, Sign:{5}'
+                  .format(jetsonStatus, data.ThetaSStatus, data.WebcamStatus,
+                      data.PersonResult, data.PersonPos, data.SignalResult ) )
+            sys.stdout.write('\x1b[3A')
 
         
     # 処理ループ終了
