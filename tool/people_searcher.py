@@ -25,7 +25,7 @@ class PeopleSearcher:
         self.XP = cuda.cupy if gpu >= 0 else np
         self.Threshold = threshold
         #self.conv = ThetaSFocusedConverter(blobsize=32, hcnt=16, wcnt=32, imgline=[8,9,10])
-		self.conv = ThetaSFocusedConverter(blobsize=16, hcnt=32, wcnt=64, imgline=[15,16,17,18,19,20])
+        self.conv = ThetaSFocusedConverter(blobsize=16, hcnt=32, wcnt=64, imgline=[15,16,17,18,19,20])
         self.save_img_cnt = 0
         
         self.counter = 0;  # 現在何枚画像が入力されているか数えるカウンタ
