@@ -286,6 +286,7 @@ def main():
 
         if( img is not None ):
             cv2.imshow( "final result", img)
+            cv2.moveWindow( "final result", 0, 100 )
             cv2.waitKey(1)
             
         
