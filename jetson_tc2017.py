@@ -5,9 +5,6 @@ Created on Sat Oct 21 11:30:28 2017
 Jetson program for Tsukuba Challenge
 """
 
-# 画像の保存 
-SAVE_IMG_FLAG = False       # 画像を保存するかのフラグ
-SAVE_IMG_ROOTDIR = "./"    # 保存場所のルートディレクトリ
 
 # PCとJetsonのIPアドレス
 PC_IP = "192.168.1.2"     # PCの有線LANポートのIPアドレス
@@ -34,6 +31,9 @@ THETAS_SIZE = (720,1280,3)
 WEBCAM_SIZE = (480,640,3)
 CAPTURE_TIMEOUT_THRESHOLD = 0.5 # キャプチャがタイムアウトしたか判定する時間[sec]
 
+# 画像の保存 
+SAVE_IMG_FLAG = False       # 画像を保存するかのフラグ
+SAVE_IMG_ROOTDIR = "./"    # 保存場所のルートディレクトリ
 
 """ 通信関連 """
 # JETSON_IP  # 必要なし自動取得
@@ -46,9 +46,47 @@ RCV_TIMEOUT = 0.001   # Jetsonの受信時のタイムアウト時間[sec]
 
 """ 人探し関連 """
 GPU = 0  # 0:GPU, -1:CPU
-BE_NN_FILE = 'result/mylenet5_100epoc_thetas_without_green3.npz'  # 人学習済みNNファイル
+BE_NN_FILE = ''  # 人学習済みNNファイル
 PEROSON_THRESHOLD = 0.90  # 人居る／居ないの閾値
 SHOW_PROCESS_IMGS = True
+
+
+""" コマンドライン引数解析 """
+args = sys.argv
+argc = len(args)
+if argc < 2:
+    print( "\nNNモデルデータを指定してください!\n" )
+    print( "使い方:\n" )
+    print( "    {0} nn_file [-s [save dir]]\n".format(os.path.basename(args[0])) )
+    print( "    [-s]        人探索時の画像を保存します．" );
+    print( "    [save dir]  画像保存ディレクトリ．指定なしはカレントディレクトリ．\n" )
+    exit(1)
+
+if( not os.path.isfile(args[1]) ):
+    print( "\n存在しないファイルです:{0}\n".format(args[1]) )
+    exit(1)
+else:
+    BE_NN_FILE = args[1]
+
+print( argc )
+print(args[2])
+if( argc > 2 and args[2] == "-s"):
+    SAVE_IMG_FLAG = True
+    if( argc > 3 ):
+        if( os.path.isdir(args[3]) ):
+            SAVE_IMG_ROOTDIR = args[3]
+        else:
+            print( "\n存在しないディレクトリです:{0}\n".args[3] )
+            exit(1)
+else:
+    SAVE_IMG_FLAG = False
+
+
+print( BE_NN_FILE )
+print(SAVE_IMG_FLAG)
+print(SAVE_IMG_ROOTDIR)
+exit(0)
+
 
 def main():
     
