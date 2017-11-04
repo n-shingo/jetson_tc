@@ -68,24 +68,20 @@ if( not os.path.isfile(args[1]) ):
 else:
     BE_NN_FILE = args[1]
 
-print( argc )
-print(args[2])
 if( argc > 2 and args[2] == "-s"):
     SAVE_IMG_FLAG = True
     if( argc > 3 ):
+        if( args[3][-1] != '/' ): args[3] += '/'
         if( os.path.isdir(args[3]) ):
             SAVE_IMG_ROOTDIR = args[3]
         else:
-            print( "\n存在しないディレクトリです:{0}\n".args[3] )
+            print( "\n存在しないディレクトリです:{0}\n".format(args[3]) )
             exit(1)
 else:
     SAVE_IMG_FLAG = False
 
-
-print( BE_NN_FILE )
-print(SAVE_IMG_FLAG)
-print(SAVE_IMG_ROOTDIR)
-exit(0)
+print(args[3])
+exit(1)
 
 
 def main():
