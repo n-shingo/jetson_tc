@@ -80,9 +80,6 @@ if( argc > 2 and args[2] == "-s"):
 else:
     SAVE_IMG_FLAG = False
 
-print(args[3])
-exit(1)
-
 
 def main():
     
